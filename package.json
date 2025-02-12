@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"テストはまだありません\" && exit 0
+    "test": "echo \"テストはまだありません\" && exit 0"
   },
   "keywords": [],
   "author": "",
