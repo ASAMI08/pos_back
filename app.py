@@ -6,6 +6,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, Session
 from datetime import datetime, timezone
 from typing import List
+import os
+from base64 import b64decode
 
 # FastAPIインスタンス作成
 app = FastAPI()
@@ -19,8 +21,19 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+# Base64エンコードされた証明書を取得
+cert_base64 = os.getenv('SSL_CERTIFICATE')
+
+# Base64デコードして証明書をバイナリデータに変換
+cert_data = b64decode(cert_base64)
+
+# 証明書ファイルを作成する
+with open('/tmp/DigiCertGlobalRootCA.crt.pem', 'wb') as cert_file:
+    cert_file.write(cert_data)
+
+
 # データベース設定
-DATABASE_URL = f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}@{os.getenv('MYSQL_HOST')}/{os.getenv('MYSQL_DB')}"
+DATABASE_URL = f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}@{os.getenv('MYSQL_HOST')}/{os.getenv('MYSQL_DB')}"ssl_ca=/tmp/DigiCertGlobalRootCA.crt.pem&ssl_verify_cert=true"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
