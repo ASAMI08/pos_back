@@ -20,7 +20,7 @@ app.add_middleware(
 )
 
 # データベース設定
-DATABASE_URL = "mysql+mysqlconnector://root:Asdfghjkl12345678@localhost:3306/class5_db"
+DATABASE_URL = f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}@{os.getenv('MYSQL_HOST')}/{os.getenv('MYSQL_DB')}"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
