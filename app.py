@@ -21,15 +21,19 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-# Base64エンコードされた証明書を取得
-cert_base64 = os.getenv('SSL_CERTIFICATE')
+# 復元作業
+pem_content = os.getenv("DB_SSL_CERT", "").replace("¥¥n", "¥n")　
 
-# Base64デコードして証明書をバイナリデータに変換
-cert_data = b64decode(cert_base64)
+import tempfile
+# 一時ファイルに書き出す
+with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix=".pem") 
+as temp_pem:
+temp_pem.write(pem_content)
+temp_pem_path = temp_pem.name # 一時ファイルのパスを取得
 
-# 証明書ファイルを作成する
-with open('/tmp/DigiCertGlobalRootCA.crt.pem', 'wb') as cert_file:
-    cert_file.write(cert_data)
+DB_CONFIG = {
+"DB_SSL_CERT": temp_pem_path, # 一時ファイルのパスを指定
+}
 
 
 # データベース設定
