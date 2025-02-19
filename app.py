@@ -37,7 +37,7 @@ DB_CONFIG = {
 
 
 # データベース設定
-DATABASE_URL = f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}@{os.getenv('MYSQL_HOST')}/{os.getenv('MYSQL_DB')}"ssl_ca=/tmp/DigiCertGlobalRootCA.crt.pem&ssl_verify_cert=true"
+DATABASE_URL = f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}@{os.getenv('MYSQL_HOST')}/{os.getenv('MYSQL_DB')}?ssl_ca=/tmp/DigiCertGlobalRootCA.crt.pem&ssl_verify_cert=true"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
