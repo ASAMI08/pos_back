@@ -11,7 +11,11 @@ app = FastAPI()
 # CORSの設定 フロントエンドからの接続を許可する部分
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://tech0-gen8-step4-pos-app-111.azurewebsites.net"], 
+    allow_origins=["https://tech0-gen8-step4-pos-app-111.azurewebsites.net",
+                   "http://localhost:3000",
+                   "http://127.0.0.1:8080" 
+], 
+    
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
