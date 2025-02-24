@@ -1,13 +1,9 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship, Session
-from datetime import datetime, timezone
+from sqlalchemy.orm import Session
 from typing import List
-import os
-from base64 import b64decode
+from connect import get_db, Product, Transaction, TransactionDetail  # connect.py から必要なものをインポート
 
 # FastAPIインスタンス作成
 app = FastAPI()
@@ -21,74 +17,6 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-# 復元作業
-pem_content = os.getenv("DB_SSL_CERT", "").replace("¥¥n", "¥n")　
-
-import tempfile
-# 一時ファイルに書き出す
-with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix=".pem") 
-as temp_pem:
-temp_pem.write(pem_content)
-temp_pem_path = temp_pem.name # 一時ファイルのパスを取得
-
-DB_CONFIG = {
-"DB_SSL_CERT": temp_pem_path, # 一時ファイルのパスを指定
-}
-
-
-# データベース設定
-DATABASE_URL = f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}@{os.getenv('MYSQL_HOST')}/{os.getenv('MYSQL_DB')}?ssl_ca=/tmp/DigiCertGlobalRootCA.crt.pem&ssl_verify_cert=true"
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
-
-# 商品マスターテーブル
-class Product(Base):
-    __tablename__ = "m_product_asami"
-    prd_id = Column(Integer, primary_key=True, index=True)
-    code = Column(String(13), unique=True, index=True)
-    name = Column(String(50))
-    price = Column(Integer)
-
-    # 商品に関連する取引明細を定義
-    transaction_details = relationship("TransactionDetail", back_populates="product")
-
-# 取引テーブル
-class Transaction(Base):
-    __tablename__ = "transactions_asami"
-    trd_id = Column(Integer, primary_key=True, index=True)
-    current_time = datetime.now(timezone.utc)
-    total_amt = Column(Integer)
-    emp_cd = Column(String(10))
-    store_cd = Column(String(10))
-    pos_no = Column(String(10))
-    
-
-    # 取引に関連する取引明細を定義
-    transaction_details = relationship("TransactionDetail", back_populates="transaction")
-
-# 取引明細テーブル
-class TransactionDetail(Base):
-    __tablename__ = "transaction_details_asami"
-    DTL_ID = Column(Integer, primary_key=True, autoincrement=True)  # autoincrement=True を追加
-    trd_id = Column(Integer, ForeignKey('transactions_asami.trd_id'), primary_key=True)
-    prd_id = Column(Integer, ForeignKey('m_product_asami.prd_id'))
-    prd_code = Column(String(13))
-    prd_name = Column(String(50))
-    prd_price = Column(Integer)
-
-    # 取引明細と関連する取引および商品を定義
-    transaction = relationship("Transaction", back_populates="transaction_details")
-    product = relationship("Product", back_populates="transaction_details")
-
-# データベースに接続
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 # 商品情報検索用のリクエストボディ
 class ProductRequest(BaseModel):
     code: str
@@ -99,7 +27,6 @@ class PurchaseRequest(BaseModel):
     store_cd: str
     pos_no: str
     items: List[dict]  # 商品リストを辞書形式で
-
 
 # 商品検索API
 @app.post("/search_product")
@@ -150,6 +77,3 @@ def purchase(request: PurchaseRequest, db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": "Purchase completed", "total_amount": total_amt, "purchased_items": purchased_items}
-
-# データベースのテーブル作成
-Base.metadata.create_all(bind=engine)
