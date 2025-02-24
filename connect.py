@@ -1,14 +1,14 @@
-coneimport platform 
+import platform 
 from sqlalchemy import create_engine
 import os
 import tempfile
-import atexit
 from dotenv import load_dotenv
 
 load_dotenv()
+
 CONNECT = os.getenv("CONNECT")
 DATABASE_URL = os.getenv("DATABASE_URL")
-pem_content = os.getenv("SSL_CA_CERT")
+pem_content = os.getenv("DB_SSL_CERT")  # AZUREの環境変数からSSL証明書を取得
 
 print(DATABASE_URL)
 
@@ -21,7 +21,7 @@ else:
 
     # SSL証明書内容の確認と処理
     if pem_content is None:
-        raise ValueError("SSL_CA_CERT is not set in environment variables.")
+        raise ValueError("DB_SSL_CERT is not set in environment variables.")
     
     pem_content = pem_content.replace("\\n", "\n").replace("\\", "")
 
@@ -40,7 +40,7 @@ else:
         DATABASE_URL,
         connect_args={
             "ssl": {
-                "ca": temp_pem_path
+                "ca": temp_pem_path  # 一時ファイルを使ってSSL証明書を指定
             }
         }
     )
