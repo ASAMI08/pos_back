@@ -2,7 +2,7 @@ import platform
 from sqlalchemy import create_engine
 import os
 import tempfile
-from dotenv import load_dotenv
+from db import db
 
 load_dotenv()
 
