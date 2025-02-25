@@ -1,14 +1,14 @@
-import platform 
+import platform
 from sqlalchemy import create_engine
 import os
 import tempfile
 from db import db
 
-load_dotenv()
+# load_dotenv()は不要：Azureの環境変数を直接使用するため削除
 
 CONNECT = os.getenv("CONNECT")
 DATABASE_URL = os.getenv("DATABASE_URL")
-pem_content = os.getenv("DB_SSL_CERT")  # AZUREの環境変数からSSL証明書を取得
+pem_content = os.getenv("DB_SSL_CERT")  # Azureの環境変数からSSL証明書を取得
 
 print(DATABASE_URL)
 
