@@ -3,8 +3,10 @@ from sqlalchemy import create_engine
 import os
 import tempfile
 from db import db
+from dotenv import load_dotenv
 
-# load_dotenv()は不要：Azureの環境変数を直接使用するため削除
+# .envファイルを読み込む
+load_dotenv()
 
 CONNECT = os.getenv("CONNECT")
 DATABASE_URL = os.getenv("DATABASE_URL")
